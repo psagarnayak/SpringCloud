@@ -1,4 +1,4 @@
-package com.demo.spring.cloud.entity;
+package com.demo.spring.cloud.customer.entity;
 
 import java.time.LocalDate;
 

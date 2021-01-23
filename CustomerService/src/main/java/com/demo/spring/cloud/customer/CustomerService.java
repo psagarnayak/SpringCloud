@@ -1,12 +1,12 @@
-package com.demo.spring.cloud;
+package com.demo.spring.cloud.customer;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.demo.spring.cloud.entity.Customer;
-import com.demo.spring.cloud.repo.CustomerRepo;
+import com.demo.spring.cloud.customer.entity.Customer;
+import com.demo.spring.cloud.customer.repo.CustomerRepo;
 
 @Service
 public class CustomerService {
@@ -30,7 +30,9 @@ public class CustomerService {
 	public boolean deleteCustomer(long customerId) {
 		// TODO Auto-generated method stub
 		boolean customerExists = customerRepo.existsById(customerId);
-		customerRepo.deleteById(customerId);;
+		if(customerExists) {
+			customerRepo.deleteById(customerId);;
+		}
 		return customerExists && !customerRepo.existsById(customerId);
 	}
 

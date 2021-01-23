@@ -1,4 +1,4 @@
-package com.demo.spring.cloud.controllers;
+package com.demo.spring.cloud.customer.controllers;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.demo.spring.cloud.CustomerService;
-import com.demo.spring.cloud.entity.Customer;
+import com.demo.spring.cloud.customer.CustomerService;
+import com.demo.spring.cloud.customer.entity.Customer;
 
 @RestController
 @RequestMapping("/customers")
