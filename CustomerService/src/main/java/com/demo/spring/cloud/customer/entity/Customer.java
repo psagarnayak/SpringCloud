@@ -31,6 +31,9 @@ public class Customer {
 	@Column(name = "name")
 	private String customerName;
 	
+	@Column(name = "balance")
+	private double accountBalance;
+	
 	private LocalDate signupDate;
 
 }
