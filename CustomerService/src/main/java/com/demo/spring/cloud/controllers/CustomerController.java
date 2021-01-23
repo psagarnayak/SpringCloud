@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.spring.cloud.CustomerService;
 import com.demo.spring.cloud.entity.Customer;
-import com.demo.spring.cloud.repo.CustomerRepo;
 
 @RestController
 @RequestMapping("/customers")
