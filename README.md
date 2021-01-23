@@ -1,7 +1,7 @@
-Demo repo to decribe implementation aspects of Spring Cloud
+Demonstrates key features of Spring Cloud
 ==============
 
-Outlines the key features of Spring cloud usage to develop a host of microservices
+Outlines the implementation aspects via a host of microservices
 --------------
 
 **Covers the following features of spring cloud**
@@ -13,4 +13,4 @@ Outlines the key features of Spring cloud usage to develop a host of microservic
 - ***Spring Zuul*** - For API Gateway Server
 - ***Spring Feign*** - Declarative REST Client
 - ***Sleuth and Zipkin*** - For API logging and tracing
-- ***Spring Clound Security*** - For Securing gateway, config server, and endpoints
+- ***Spring Clound Security*** - For securing endpoints using OAuth2
