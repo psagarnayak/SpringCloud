@@ -1,14 +1,16 @@
-Will become a heading
+Demo repo to decribe implementation aspects of Spring Cloud
 ==============
 
-Will become a sub heading
+Outlines the key features of Spring cloud usage to develop a host of microservices
 --------------
 
-*This will be Italic*
+**Covers the following features of spring cloud**
 
-**This will be Bold**
-
-- This will be a list item
-- This will be a list item
-
-    Add a indent and this will end up as code
+- ***Spring Cloud Config*** - For cloud based configuration
+- ***Spring Eureka*** - For Service Registry Server
+- ***Spring Ribbon*** - For Load Balancing
+- ***Spring Histrix*** - For Circut Breaker
+- ***Spring Zuul*** - For API Gateway Server
+- ***Spring Feign*** - Declarative REST Client
+- ***Sleuth and Zipkin*** - For API logging and tracing
+- ***Spring Clound Security*** - For Securing gateway, config server, and endpoints
