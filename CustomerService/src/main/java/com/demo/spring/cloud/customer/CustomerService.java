@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.demo.spring.cloud.customer.dto.RequestStatus;
+import com.demo.spring.cloud.customer.dto.RequestStatus.RequestStatusBuilder;
 import com.demo.spring.cloud.customer.entity.Customer;
 import com.demo.spring.cloud.customer.repo.CustomerRepo;
 
@@ -37,24 +39,32 @@ public class CustomerService {
 		return customerExists && !repo.existsById(customerId);
 	}
 
-	public boolean incrementBalance(long id, double incrementBy) {
+	public RequestStatus incrementBalance(long id, double incrementBy) {
+		RequestStatusBuilder builder = RequestStatus.builder();
 		Customer customer = repo.findById(id).orElse(null);
 		if (customer == null || incrementBy < 1) {
-			return false;
+			builder.success(false);
+			builder.errorMsg("Customer Not found");
 		}
 		customer.setAccountBalance(customer.getAccountBalance() + incrementBy);
-		repo.save(customer);
-		return true;
+		Customer savedCustomer = repo.save(customer);
+		builder.success(true);
+		builder.customer(savedCustomer);
+		return builder.build();
 	}
 
-	public boolean decrementBalance(long id, long decrementBy) {
+	public RequestStatus decrementBalance(long id, long decrementBy) {
+		RequestStatusBuilder builder = RequestStatus.builder();
 		Customer customer = repo.findById(id).orElse(null);
 		if (customer == null || decrementBy < 1 || customer.getAccountBalance() < decrementBy) {
-			return false;
+			builder.success(false);
+			builder.errorMsg("Customer Not found");
 		}
 		customer.setAccountBalance(customer.getAccountBalance() - decrementBy);
-		repo.save(customer);
-		return true;
+		Customer savedCustomer = repo.save(customer);
+		builder.success(true);
+		builder.customer(savedCustomer);
+		return builder.build();
 	}
 
 }

@@ -55,7 +55,6 @@ public class ProductService {
 		boolean productExists = repo.existsById(id);
 		if (productExists) {
 			repo.deleteById(id);
-			;
 		}
 		return productExists && !repo.existsById(id);
 	}

@@ -1,6 +1,5 @@
-package com.demo.spring.cloud.product.entity;
+package com.demo.spring.cloud.order.entity;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -13,23 +12,22 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name="Products")
+@Table(name="OrderItems")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @ToString
-public class Product {
+public class OrderLine {
 	
 	@Id
 	@GeneratedValue
 	private long id;
 	
-	private String name;
+	private long productId;
 	
-	private double price;
+	private long quantity;
 	
-	@Column(name="Quant_Avail")
-	private long availableQuantity;
+	private double pricePerItem;
 
 }

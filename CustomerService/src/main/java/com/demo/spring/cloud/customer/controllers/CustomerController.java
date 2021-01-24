@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.spring.cloud.customer.CustomerService;
+import com.demo.spring.cloud.customer.dto.RequestStatus;
 import com.demo.spring.cloud.customer.entity.Customer;
 import com.demo.spring.cloud.customer.restdto.PostResponse;
 import com.demo.spring.cloud.customer.restdto.BalanceEditRequest;
@@ -58,13 +59,14 @@ public class CustomerController {
 			HttpServletResponse response) {
 		PostResponse responseBody = null;
 		if (request.getIncrementBy() != null && request.getIncrementBy() > 0) {
-			boolean incStatus = service.incrementBalance(id, request.getIncrementBy());
-			responseBody = incStatus ? new PostResponse(incStatus, "Increment successful.")
-					: new PostResponse(incStatus, "Increment Failed.");
+			RequestStatus status = service.incrementBalance(id, request.getIncrementBy());
+			responseBody = status.isSuccess() ? new PostResponse(true, "Increment successful.")
+					: new PostResponse(false, "Failed: " + status.getErrorMsg());
+
 		} else if (request.getDecrementBy() != null && request.getDecrementBy() > 0) {
-			boolean decStatus = service.decrementBalance(id, request.getDecrementBy());
-			responseBody = decStatus ? new PostResponse(decStatus, "Decrement successful.")
-					: new PostResponse(decStatus, "Decrement Failed.");
+			RequestStatus status = service.decrementBalance(id, request.getDecrementBy());
+			responseBody = status.isSuccess() ? new PostResponse(true, "Decrement successful.")
+					: new PostResponse(false, "Failed: " + status.getErrorMsg());
 		} else {
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseBody = new PostResponse(false, "Bad request! Either incrementBy or DecrementBy expected");
