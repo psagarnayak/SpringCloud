@@ -4,12 +4,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.demo.spring.cloud.order.dto.ProductDTO;
 import com.demo.spring.cloud.order.dto.RequestStatusDTO;
 import com.demo.spring.cloud.order.dto.RequestStatusDTO.RequestStatusDTOBuilder;
 import com.demo.spring.cloud.order.entity.Order;
+import com.demo.spring.cloud.order.entity.OrderLine;
+import com.demo.spring.cloud.order.exceptions.InvalidOrderException;
+import com.demo.spring.cloud.order.exceptions.OrderPlacementException;
+import com.demo.spring.cloud.order.exceptions.ProductUnavailableException;
 import com.demo.spring.cloud.order.repo.OrderRepo;
 
 @Service
@@ -20,6 +24,9 @@ public class OrderService {
 
 	@Autowired
 	private CustomerService customerService;
+	
+	@Autowired
+	private ProductService productService;
 
 	public List<Order> findAllOrders() {
 		return repo.findAll();
@@ -39,7 +46,7 @@ public class OrderService {
 		Order order = repo.findById(id).orElse(null);
 		if (order == null) {
 			builder.success(false);
-			builder.errorMsg("Error! Order not found!");
+			builder.errorMsg("Order not found!");
 		} else {
 			order.setStatus(status);
 			Order savedOrder = repo.save(order);
@@ -51,16 +58,26 @@ public class OrderService {
 	}
 
 	public RequestStatusDTO placeOrder(Order order) {
-
-		RequestStatusDTO chargeCustomer = customerService.chargeCustomer(order.getCustomerId(), 10.0);
-
+		
 		RequestStatusDTOBuilder status = RequestStatusDTO.builder();
-		if (!chargeCustomer.isSuccess()) {
+		
+		try {
+			blockProductAndUpdateOrderTotal(order);
+		} catch (OrderPlacementException | InvalidOrderException | ProductUnavailableException e) {
 			status.success(false);
-			status.errorMsg("Error: " + chargeCustomer.getErrorMsg());
+			status.errorMsg(e.getMessage());
+			return status.build();
+		}
+
+		RequestStatusDTO chargeCustomer = customerService.chargeCustomer(order.getCustomerId(), order.getOrderTotal());
+
+		if (!chargeCustomer.isSuccess()) {
+			reverseProductBlock(order.getItems());
+			status.success(false);
+			status.errorMsg(chargeCustomer.getErrorMsg());
 		} else {
+			
 			order.setStatus("PLACED");
-			order.setOrderTotal(10.0);
 			order.setPlacedAt(LocalDateTime.now());
 			Order placedOrder = repo.save(order);
 			if (placedOrder == null) {
@@ -72,6 +89,51 @@ public class OrderService {
 			}
 		}
 		return status.build();
+	}
+	
+	private void blockProductAndUpdateOrderTotal(Order order) throws OrderPlacementException, InvalidOrderException, ProductUnavailableException {
+		
+		double orderTotal = 0.0;
+		ProductDTO productInfo = null;
+		
+		List<OrderLine> items = order.getItems();
+		OrderLine item = null;
+		for(int i = 0; i < items.size(); i++) {
+			item = items.get(i);
+			productInfo = productService.fetchProductInfo(item.getProductId());
+			
+			if(productInfo == null) {
+				throw new InvalidOrderException(String.format("ProductId %s is not recognized", item.getProductId()));
+			}
+			item.setPricePerItem(productInfo.getPrice());
+			
+			RequestStatusDTO statusDTO = productService.decrementAvailableQuantity(item.getProductId(), item.getQuantity());
+			
+			if(!statusDTO.isSuccess()) {
+				//Revert all product blocks made so far
+				if(i>0) {
+					reverseProductBlock(items.subList(0, i));
+				}
+				
+				if(item.getQuantity() > productInfo.getAvailableQuantity()) {
+				throw new ProductUnavailableException(
+						String.format("Insufficient Availability: Available Quantity for product: %s is %s",
+								productInfo.getName(), productInfo.getAvailableQuantity()));
+				} else {
+					throw new OrderPlacementException("Error placing Order");
+				}
+			}
+			
+			orderTotal += productInfo.getPrice() * item.getQuantity();
+		}
+		
+		order.setOrderTotal(orderTotal);
+	}
+
+	private void reverseProductBlock(List<OrderLine> items) {
+		for(OrderLine item: items) {
+			productService.incrementAvailableQuantity(item.getProductId(), item.getQuantity());
+		}
 	}
 	
 	public boolean deleteOrder(long id) {

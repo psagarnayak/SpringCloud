@@ -61,12 +61,12 @@ public class CustomerController {
 		if (request.getIncrementBy() != null && request.getIncrementBy() > 0) {
 			RequestStatus status = service.incrementBalance(id, request.getIncrementBy());
 			responseBody = status.isSuccess() ? new PostResponse(true, "Increment successful.")
-					: new PostResponse(false, "Failed: " + status.getErrorMsg());
+					: new PostResponse(false, status.getErrorMsg());
 
 		} else if (request.getDecrementBy() != null && request.getDecrementBy() > 0) {
 			RequestStatus status = service.decrementBalance(id, request.getDecrementBy());
 			responseBody = status.isSuccess() ? new PostResponse(true, "Decrement successful.")
-					: new PostResponse(false, "Failed: " + status.getErrorMsg());
+					: new PostResponse(false, status.getErrorMsg());
 		} else {
 			response.setStatus(HttpStatus.BAD_REQUEST.value());
 			responseBody = new PostResponse(false, "Bad request! Either incrementBy or DecrementBy expected");

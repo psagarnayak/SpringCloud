@@ -43,7 +43,7 @@ public class ProductController {
 	}
 
 	@GetMapping("{id}")
-	public Product getCustomerById(@PathVariable("id") long id, HttpServletResponse response) {
+	public Product getProductById(@PathVariable("id") long id, HttpServletResponse response) {
 		Product product = service.findProductById(id);
 		if (product == null) {
 			response.setStatus(HttpStatus.NOT_FOUND.value());
