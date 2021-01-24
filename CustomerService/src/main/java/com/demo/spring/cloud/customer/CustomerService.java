@@ -60,6 +60,7 @@ public class CustomerService {
 	}
 
 	public RequestStatus decrementBalance(long id, long decrementBy) {
+		System.out.println("Attempting to decrement balance by: " + decrementBy);
 		RequestStatusBuilder builder = RequestStatus.builder();
 		Customer customer = repo.findById(id).orElse(null);
 		if (customer == null) {

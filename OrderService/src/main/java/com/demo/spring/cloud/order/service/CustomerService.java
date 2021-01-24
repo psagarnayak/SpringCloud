@@ -1,10 +1,14 @@
 package com.demo.spring.cloud.order.service;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -23,8 +27,11 @@ public class CustomerService {
 	@Autowired
 	RestTemplate rest;
 
-	@Value("${customerms.baseurl}")
-	private String customerMSBaseUrl;
+	@Value("${customerms.name}")
+	private String customerMSName;
+	
+	@Autowired
+	DiscoveryClient discoveryClient;
 
 	public RequestStatusDTO chargeCustomer(long customerId, double amountToCharge) {
 		
@@ -36,7 +43,7 @@ public class CustomerService {
 		HttpEntity<Map<String, Object>> requestEntity =  new HttpEntity<>(requestBody);
 		
 		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				customerMSBaseUrl + "/" + customerId + "/editBalance",
+				fetchCustomerBaseUrl() + "/customers/" + customerId + "/editBalance",
 				HttpMethod.POST, requestEntity, PostResponse.class);
 		
 		PostResponse response = responseEntity.getBody();
@@ -54,6 +61,13 @@ public class CustomerService {
 		
 		return status.build();
 	}
+
+	private URI fetchCustomerBaseUrl() {
+		List<ServiceInstance> instances = discoveryClient.getInstances(customerMSName); 
+		ServiceInstance instance=instances.get(0); 
+		URI msEndpointURI= instance.getUri();
+		return msEndpointURI;
+	}
 	
 	public RequestStatusDTO addBalance(long customerId, double amountToAdd) {
 		
@@ -65,7 +79,7 @@ public class CustomerService {
 		HttpEntity<Map<String, Object>> requestEntity =  new HttpEntity<>(requestBody);
 		
 		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				customerMSBaseUrl + "/" + customerId + "/editBalance",
+				fetchCustomerBaseUrl() + "/customers/" + customerId + "/editBalance",
 				HttpMethod.POST, requestEntity, PostResponse.class);
 		
 		PostResponse response = responseEntity.getBody();

@@ -2,10 +2,13 @@ package com.demo.spring.cloud.order.service;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -26,14 +29,17 @@ public class ProductService {
 	@Autowired
 	RestTemplate rest;
 
-	@Value("${productms.baseurl}")
-	private String productMSBaseUrl;
+	@Value("${productms.name}")
+	private String productMSName;
+	
+	@Autowired
+	DiscoveryClient discoveryClient;
 
 	public ProductDTO fetchProductInfo(long id) {
 
 		ResponseEntity<ProductDTO> response = null;
 		try {
-		response = rest.getForEntity(URI.create(productMSBaseUrl + "/" + id),
+		response = rest.getForEntity(URI.create(fetchProductBaseUrl() + "/products/" + id),
 				ProductDTO.class);
 		} catch(HttpClientErrorException e) {
 			if(e.getRawStatusCode() != HttpStatus.NOT_FOUND.value()) {
@@ -57,7 +63,7 @@ public class ProductService {
 		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody);
 
 		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				productMSBaseUrl + "/" + productId + "/editQuantity", HttpMethod.POST, requestEntity,
+				fetchProductBaseUrl() + "/products/" + productId + "/editQuantity", HttpMethod.POST, requestEntity,
 				PostResponse.class);
 
 		PostResponse response = responseEntity.getBody();
@@ -83,7 +89,7 @@ public class ProductService {
 		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody);
 
 		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				productMSBaseUrl + "/" + productId + "/editQuantity", HttpMethod.POST, requestEntity,
+				fetchProductBaseUrl() + "/products/" + productId + "/editQuantity", HttpMethod.POST, requestEntity,
 				PostResponse.class);
 
 		PostResponse response = responseEntity.getBody();
@@ -97,6 +103,13 @@ public class ProductService {
 		}
 
 		return status.build();
+	}
+	
+	private URI fetchProductBaseUrl() {
+		List<ServiceInstance> instances = discoveryClient.getInstances(productMSName); 
+		ServiceInstance instance=instances.get(0); 
+		URI msEndpointURI= instance.getUri();
+		return msEndpointURI;
 	}
 
 }
