@@ -1,4 +1,4 @@
-package com.demo.spring.cloud.customer;
+package com.demo.spring.cloud.customer.service;
 
 import java.time.LocalDate;
 import java.util.List;

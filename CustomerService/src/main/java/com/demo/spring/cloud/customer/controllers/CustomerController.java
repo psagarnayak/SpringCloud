@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.demo.spring.cloud.customer.CustomerService;
 import com.demo.spring.cloud.customer.dto.RequestStatus;
 import com.demo.spring.cloud.customer.entity.Customer;
-import com.demo.spring.cloud.customer.restdto.PostResponse;
 import com.demo.spring.cloud.customer.restdto.BalanceEditRequest;
+import com.demo.spring.cloud.customer.restdto.PostResponse;
+import com.demo.spring.cloud.customer.service.CustomerService;
 
 @RestController
 @RequestMapping("/customers")
