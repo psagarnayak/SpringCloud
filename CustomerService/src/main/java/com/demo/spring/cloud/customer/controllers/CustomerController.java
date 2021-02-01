@@ -35,9 +35,6 @@ public class CustomerController {
 	@GetMapping("{id}")
 	public Customer getCustomerById(@PathVariable("id") long customerId, HttpServletResponse response) {
 		Customer customer = service.findCustomerById(customerId);
-		if (customer == null) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
 		return customer;
 	}
 
@@ -47,11 +44,8 @@ public class CustomerController {
 	}
 
 	@DeleteMapping("/{id}")
-	public void deleteCustomer(@PathVariable("id") long customerId, HttpServletResponse response) {
-		boolean customerDeleted = service.deleteCustomer(customerId);
-		if (!customerDeleted) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
+	public boolean deleteCustomer(@PathVariable("id") long customerId, HttpServletResponse response) {
+		return service.deleteCustomer(customerId);
 	}
 
 	@PostMapping("/{id}/editBalance")

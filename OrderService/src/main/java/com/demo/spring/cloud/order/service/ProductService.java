@@ -1,19 +1,12 @@
 package com.demo.spring.cloud.order.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
+import com.demo.spring.cloud.order.dto.EditProductQtyRequest;
 import com.demo.spring.cloud.order.dto.ProductDTO;
 import com.demo.spring.cloud.order.dto.RequestStatusDTO;
 import com.demo.spring.cloud.order.dto.RequestStatusDTO.RequestStatusDTOBuilder;
@@ -23,22 +16,11 @@ import com.demo.spring.cloud.order.restdto.PostResponse;
 public class ProductService {
 
 	@Autowired
-	RestTemplate rest;
+	private ProductServiceFeignClient productMsClient;
 
-	@Value("${productms.name}")
-	private String productMSName;
-	
 	public ProductDTO fetchProductInfo(long id) {
 
-		ResponseEntity<ProductDTO> response = null;
-		try {
-		response = rest.getForEntity(
-				String.format("http://%s/products/%s", productMSName, id), ProductDTO.class);
-		} catch(HttpClientErrorException e) {
-			if(e.getRawStatusCode() != HttpStatus.NOT_FOUND.value()) {
-				throw e;
-			}
-		}
+		ResponseEntity<ProductDTO> response = productMsClient.fetchProductInfo(id);
 
 		if (response == null || response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
 			return null;
@@ -50,20 +32,15 @@ public class ProductService {
 
 		RequestStatusDTOBuilder status = RequestStatusDTO.builder();
 
-		Map<String, Object> requestBody = new HashMap<>();
-		requestBody.put("decrementBy", decrementBy);
-
-		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody);
-
-		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				String.format("http://%s/products/%s/editQuantity", productMSName, productId), HttpMethod.POST, requestEntity,
-				PostResponse.class);
+		ResponseEntity<PostResponse> responseEntity = productMsClient.editQuantity(productId,
+				EditProductQtyRequest.builder().decrementBy(decrementBy).build());
 
 		PostResponse response = responseEntity.getBody();
 
 		if (responseEntity.getStatusCode() != HttpStatus.OK || !response.isSuccess()) {
 			status.success(false);
-			status.errorMsg(StringUtils.hasLength(response.getMessage()) ? response.getMessage() : "Could not block order quantity for productId: " + productId);
+			status.errorMsg(StringUtils.hasLength(response.getMessage()) ? response.getMessage()
+					: "Could not block order quantity for productId: " + productId);
 
 		} else {
 			status.success(true);
@@ -71,25 +48,20 @@ public class ProductService {
 
 		return status.build();
 	}
-	
+
 	public RequestStatusDTO incrementAvailableQuantity(long productId, long incrementBy) {
 
 		RequestStatusDTOBuilder status = RequestStatusDTO.builder();
 
-		Map<String, Object> requestBody = new HashMap<>();
-		requestBody.put("incrementBy", incrementBy);
-
-		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody);
-
-		ResponseEntity<PostResponse> responseEntity = rest.exchange(
-				String.format("http://%s/products/%s/editQuantity", productMSName, productId), HttpMethod.POST, requestEntity,
-				PostResponse.class);
+		ResponseEntity<PostResponse> responseEntity = productMsClient.editQuantity(productId,
+				EditProductQtyRequest.builder().incrementBy(incrementBy).build());
 
 		PostResponse response = responseEntity.getBody();
 
 		if (responseEntity.getStatusCode() != HttpStatus.OK || !response.isSuccess()) {
 			status.success(false);
-			status.errorMsg(StringUtils.hasLength(response.getMessage()) ? response.getMessage() : "Could not increment product quantity for: " + productId + " by: " + incrementBy);
+			status.errorMsg(StringUtils.hasLength(response.getMessage()) ? response.getMessage()
+					: "Could not increment product quantity for: " + productId + " by: " + incrementBy);
 
 		} else {
 			status.success(true);
@@ -97,5 +69,5 @@ public class ProductService {
 
 		return status.build();
 	}
-	
+
 }

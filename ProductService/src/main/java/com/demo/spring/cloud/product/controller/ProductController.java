@@ -44,11 +44,7 @@ public class ProductController {
 
 	@GetMapping("{id}")
 	public Product getProductById(@PathVariable("id") long id, HttpServletResponse response) {
-		Product product = service.findProductById(id);
-		if (product == null) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
-		return product;
+		return service.findProductById(id);
 	}
 
 	@PostMapping
@@ -57,11 +53,8 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/{id}")
-	public void deleteProduct(@PathVariable("id") long id, HttpServletResponse response) {
-		boolean deleted = service.deleteProduct(id);
-		if (!deleted) {
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
+	public boolean deleteProduct(@PathVariable("id") long id, HttpServletResponse response) {
+		return service.deleteProduct(id);
 	}
 
 	@PostMapping("/{id}/editQuantity")
