@@ -22,6 +22,7 @@ import com.demo.spring.cloud.order.restdto.OrderEditRequest;
 import com.demo.spring.cloud.order.restdto.PostResponse;
 import com.demo.spring.cloud.order.restdto.PostResponse.PostResponseBuilder;
 import com.demo.spring.cloud.order.service.OrderService;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @RequestMapping("/orders")
@@ -52,7 +53,9 @@ public class OrderController {
 		return order;
 	}
 
+	
 	@PostMapping
+	@HystrixCommand(fallbackMethod = "placeOrderFallback")
 	public PostResponse placeOrder(@RequestBody Order order) {
 
 		RequestStatusDTO placementStatus = service.placeOrder(order);
@@ -67,6 +70,15 @@ public class OrderController {
 			response.message(placementStatus.getErrorMsg());
 			response.order(order);
 		}
+		return response.build();
+	}
+	
+	public PostResponse placeOrderFallback(@RequestBody Order order) {
+		PostResponseBuilder response = PostResponse.builder();
+		response.success(false);
+		response.message("Unable to process request at this time!");
+		response.order(order);
+		
 		return response.build();
 	}
 
